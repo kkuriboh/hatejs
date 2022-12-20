@@ -13,7 +13,7 @@ const Footer: React.FC = () => {
 				className="text-zinc-600 hover:underline"
 				href="https://github.com/kkuriboh/hatejs"
 			>
-				Github
+				GitHub
 			</a>
 			.
 		</footer>

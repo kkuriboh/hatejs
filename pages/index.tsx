@@ -1,18 +1,15 @@
 import matter from 'gray-matter'
-import { GetServerSideProps, InferGetServerSidePropsType } from 'next'
+import { GetServerSideProps } from 'next'
 import Head from 'next/head'
 import slugify from 'slugify'
 import Footer from '../components/footer'
 import Header from '../components/header'
 import { client } from '../utils/redis'
+import PostListing from '../components/post_listing'
+import { Posts } from '../utils/types'
 
 type Props = {
-	posts: {
-		author: string
-		date: string
-		summary: string
-		slug: string
-	}[]
+	posts: Posts
 }
 
 export default function Home({ posts }: Props) {
@@ -32,7 +29,7 @@ export default function Home({ posts }: Props) {
 			</Head>
 			<Header />
 			<main className="md:p-8 sm:p-4">
-				<section className="flex flex-col gap-4 px-6 text-zinc-900">
+				<section className="flex flex-col gap-4 px-6 mb-6 text-zinc-900">
 					<h2 className="text-zinc-900 text-4xl font-semibold">
 						we hate javascript and you should too!
 					</h2>
@@ -75,36 +72,12 @@ export default function Home({ posts }: Props) {
 						</p>
 					</article>
 				</section>
-				<section className="flex flex-col gap-4 mt-6 px-6 text-zinc-900">
-					<h2 className="text-zinc-900 text-4xl font-semibold">
-						latest blog posts
-					</h2>
-					{posts &&
-						posts.map(({ author, date, summary }, index) => {
-							return (
-								<article
-									key={index}
-									className="border-2 rounded border-zinc-900 p-4"
-								>
-									<h3 className="font-semibold">
-										{author}: <small>{date}</small>
-									</h3>
-									<p className="indent-2">
-										{`${summary.slice(0, 250)}${
-											summary.length > 250 ? '...' : ''
-										}
-										`}
-									</p>
-									<button className="rounded border border-zinc-700 p-1 mt-4 hover:bg-zinc-600 hover:text-zinc-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-50 focus:ring-zinc-400">
-										read more
-									</button>
-								</article>
-							)
-						})}
-					<button className="mx-auto rounded border border-zinc-700 p-1 hover:bg-zinc-600 hover:text-zinc-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-50 focus:ring-zinc-400">
-						load more
-					</button>
-				</section>
+
+				<PostListing
+					posts={posts}
+					cursor_increment={3}
+					cursor_initial_position={3}
+				/>
 			</main>
 			<Footer />
 		</>
@@ -112,17 +85,27 @@ export default function Home({ posts }: Props) {
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
+	/*fs.readFile('test_post.md', 'utf-8', async (err, data) => {
+		if (err) {
+			console.error(err)
+			return
+		}
+		const matt = matter(data)
+		console.log({ data, title: matt.data.title })
+
+		for (let index = 0; index < 10; index++) {
+			const slug = slugify(matt.data.title + ` ${index}`)
+			await client.hset('posts', { [slug]: data })
+		}
+	})*/
+
 	const posts = await client.hgetall('posts')
 
 	const metadata = []
 	for (const key in posts) {
 		if (Object.prototype.hasOwnProperty.call(posts, key)) {
-			const content = (posts[key] as string).split('\n')
-			if (!content[0]) {
-				content.splice(0, 1)
-			}
 			metadata.push({
-				fm: matter(content.join('\n')),
+				fm: matter(posts[key] as string),
 				slug: slugify(key),
 			})
 		}
@@ -130,10 +113,11 @@ export const getServerSideProps: GetServerSideProps = async () => {
 
 	return {
 		props: {
-			posts: metadata.slice(0, 3).map(({ fm, slug }) => ({
+			posts: metadata.map(({ fm, slug }) => ({
 				author: fm.data.author,
 				date: fm.data.date,
 				summary: fm.data.summary,
+				title: fm.data.title,
 				slug,
 			})),
 		},

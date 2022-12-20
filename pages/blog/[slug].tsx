@@ -1,32 +1,42 @@
-import { GetStaticPaths, GetStaticProps, InferGetStaticPropsType } from 'next'
-import slugify from 'slugify'
+import matter from 'gray-matter'
+import { marked } from 'marked'
+import { GetStaticPaths, GetStaticProps } from 'next'
+import Footer from '../../components/footer'
+import Header from '../../components/header'
 
 import { client } from '../../utils/redis'
+import { Post } from '../../utils/types'
 
-const BlogPage: React.FC<InferGetStaticPropsType<typeof getStaticProps>> = ({
-	posts,
-}) => {
+type Props = {
+	post: Post
+	md: string
+}
+
+const BlogPage: React.FC<Props> = ({ post, md }) => {
 	return (
-		<main>
-			{posts.map((post: any) => (
-				<p className="text-zinc-900 text-xl">{post.value}</p>
-			))}
-		</main>
+		<>
+			<Header />
+			<main className="md:p-8 sm:p-4">
+				{md && (
+					<div dangerouslySetInnerHTML={{ __html: marked(md) }}></div>
+				)}
+			</main>
+			<Footer />
+		</>
 	)
 }
 
-export const getStaticProps: GetStaticProps = async () => {
-	await client.hset('posts', {
-		['i hate js']: '# js is bad\n## **we hate js**',
-	})
-	const posts = await client.hgetall('posts')
-	console.log(posts)
-	return { props: { posts } }
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+	const { slug } = params!
+	const post = matter((await client.hget('posts', slug as string)) as string)
+	return { props: { post: post.data, md: post.content } }
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-	const posts = (await client.hkeys('posts')).map((post) => slugify(post))
-	return { paths: posts, fallback: false }
+	return {
+		paths: (await client.hkeys('posts')).map((key) => `/blog/${key}`),
+		fallback: false,
+	}
 }
 
 export default BlogPage
