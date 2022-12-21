@@ -1,13 +1,16 @@
 import { createNextApiHandler } from '@trpc/server/adapters/next'
 import { initTRPC } from '@trpc/server'
 import { z } from 'zod'
+import { client } from '../../../utils/redis'
 
 const t = initTRPC.create()
 
 const app_router = t.router({
-	hello: t.procedure
-		.input(z.object({ name: z.string() }))
-		.query(({ input }) => ({ content: `hello ${input.name}` })),
+	add_admin: t.procedure
+		.input(z.object({ id: z.string() }))
+		.mutation(({ input }) => {
+			client.set('admins', input.id)
+		}),
 })
 
 export type AppRouter = typeof app_router

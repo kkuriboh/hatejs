@@ -1,18 +1,15 @@
 import { GetServerSideProps } from 'next'
-import { getSession, signOut } from 'next-auth/react'
-import { useRouter } from 'next/router'
-import Button from '../../components/button'
+import { getSession } from 'next-auth/react'
+import Footer from '../../components/footer'
+import Header from '../../components/header'
 
 const Panel: React.FC = () => {
-	const router = useRouter()
 	return (
-		<Button
-			onClick={() => {
-				signOut()
-			}}
-		>
-			logout
-		</Button>
+		<>
+			<Header />
+			<main></main>
+			<Footer />
+		</>
 	)
 }
 
