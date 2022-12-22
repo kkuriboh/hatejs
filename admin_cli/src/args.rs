@@ -10,6 +10,8 @@ pub struct AdminCli {
 pub enum CommandType {
     /// Add an user as a blog poster
     AddPoster(AddUserCommand),
+    /// Call webhook to rebuild the website
+    Rebuild,
 }
 
 #[derive(Args)]

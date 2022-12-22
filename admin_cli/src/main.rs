@@ -1,11 +1,12 @@
+use anyhow::Result;
 use args::CommandType;
 use clap::Parser;
-use redis::{AsyncCommands, RedisResult};
+use redis::AsyncCommands;
 
 mod args;
 
 #[tokio::main]
-async fn main() -> RedisResult<()> {
+async fn main() -> Result<()> {
     let redis = redis::Client::open(env!("REDIS_URL"))?;
     let args = args::AdminCli::parse();
 
@@ -15,7 +16,13 @@ async fn main() -> RedisResult<()> {
                 .get_tokio_connection()
                 .await?
                 .sadd("GM", user.user_id)
-                .await?
+                .await?;
+        }
+        CommandType::Rebuild => {
+            reqwest::Client::new()
+                .post(env!("BUILD_HOOK"))
+                .send()
+                .await?;
         }
     };
     Ok(())
