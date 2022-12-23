@@ -1,14 +1,21 @@
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import { GetServerSideProps } from 'next'
-import { Session, User } from 'next-auth'
+import { User } from 'next-auth'
 import { getSession } from 'next-auth/react'
 import {
 	ClipboardDocumentListIcon,
 	ClipboardDocumentCheckIcon,
 } from '@heroicons/react/24/outline'
+import { marked } from 'marked'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/kimbie-dark.css'
+
 import Footer from '../../components/footer'
 import Header from '../../components/header'
-import { client } from '../../utils/redis'
-import { useEffect, useState } from 'react'
+import { check_if_gm } from '../../utils/redis'
+import Button from '../../components/button'
+import { trpc } from '../../utils/trpc'
+import { useRouter } from 'next/router'
 
 type props = {
 	user: User
@@ -16,11 +23,56 @@ type props = {
 }
 
 const Panel: React.FC<props> = ({ user, gm }) => {
+	const router = useRouter()
+
 	const [copied, set_copied] = useState(false)
+
+	const [title, set_title] = useState('')
+	const [author, set_author] = useState('')
+	const [summary, set_summary] = useState('')
+	const [content, set_content] = useState('')
+
+	const preview_ref = useRef<HTMLDivElement>(null)
+	const [preview, set_preview] = useState('')
 
 	useEffect(() => {
 		if (copied) setTimeout(() => set_copied(false), 2000)
 	}, [copied])
+	useEffect(() => {
+		set_preview(marked(content))
+	}, [content])
+	useEffect(() => {
+		preview_ref.current
+			?.querySelectorAll('code')
+			.forEach((element) => hljs.highlightElement(element as any))
+	}, [preview])
+
+	const post_mutation = trpc.add_post.useMutation()
+	const handle_submit = async (e: FormEvent) => {
+		e.preventDefault()
+		const res = await post_mutation.mutateAsync({
+			poster_id: user.id!,
+			post_matter: {
+				author,
+				title,
+				date: new Date().toDateString(),
+				summary,
+			},
+			post_content: content,
+		})
+
+		if (res.status === 401 && res.error) {
+			alert(res.error)
+			router.push('/')
+			return
+		}
+
+		set_title('')
+		set_author('')
+		set_summary('')
+		set_content('')
+		set_preview('')
+	}
 
 	if (!gm)
 		return (
@@ -54,10 +106,65 @@ const Panel: React.FC<props> = ({ user, gm }) => {
 				<Footer />
 			</div>
 		)
+
 	return (
 		<>
 			<Header />
-			<main></main>
+			<main className="flex p-2 gap-2">
+				<div className="w-2/4">
+					<form
+						onSubmit={handle_submit}
+						className="flex flex-col gap-2"
+					>
+						<label htmlFor="title">Title:</label>
+						<input
+							type="text"
+							id="title"
+							required
+							value={title}
+							onChange={(ev) => set_title(ev.target.value)}
+							className="rounded transition-colors border border-zinc-700 hover:border-zinc-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-50 focus:ring-zinc-400"
+						/>
+						<label htmlFor="author">Author:</label>
+						<input
+							type="text"
+							id="author"
+							required
+							value={author}
+							onChange={(ev) => set_author(ev.target.value)}
+							className="rounded transition-colors border border-zinc-700 hover:border-zinc-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-50 focus:ring-zinc-400"
+						/>
+						<label htmlFor="summary">Summary:</label>
+						<textarea
+							name="summary"
+							id="summary"
+							required
+							value={summary}
+							onChange={(ev) => set_summary(ev.target.value)}
+							className="rounded transition-colors border border-zinc-700 hover:border-zinc-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-50 focus:ring-zinc-400"
+							rows={3}
+						></textarea>
+						<label htmlFor="content">Content:</label>
+						<textarea
+							name="content"
+							id="content"
+							required
+							className="w-full rounded transition-colors border border-zinc-700 hover:border-zinc-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-50 focus:ring-zinc-400"
+							rows={10}
+							value={content}
+							onChange={(ev) => set_content(ev.target.value)}
+						></textarea>
+						<Button className="px-6 bg-zinc-800 text-zinc-50">
+							post
+						</Button>
+					</form>
+				</div>
+				<div
+					ref={preview_ref}
+					className="w-2/4 bg-zinc-900 text-zinc-50 rounded p-4"
+					dangerouslySetInnerHTML={{ __html: preview }}
+				/>
+			</main>
 			<Footer />
 		</>
 	)
@@ -73,6 +180,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 		}
 	}
 
-	const gms = await client.sdiff('GM')
-	return { props: { user: session.user, gm: gms.includes(session.user.id) } }
+	return {
+		props: { user: session.user, gm: await check_if_gm(session.user.id) },
+	}
 }
