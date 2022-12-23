@@ -6,11 +6,9 @@ import { client } from '../../../utils/redis'
 const t = initTRPC.create()
 
 const app_router = t.router({
-	add_admin: t.procedure
-		.input(z.object({ id: z.string() }))
-		.mutation(({ input }) => {
-			client.set('admins', input.id)
-		}),
+	add_post: t.procedure
+		.input(z.object({ poster_id: z.string() }))
+		.mutation(({ input }) => {}),
 })
 
 export type AppRouter = typeof app_router
