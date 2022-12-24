@@ -55,7 +55,7 @@ const Panel: React.FC<props> = ({ user, gm }) => {
 			post_matter: {
 				author,
 				title,
-				date: new Date().toDateString(),
+				date: new Date().toISOString(),
 				summary,
 			},
 			post_content: content,

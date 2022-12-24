@@ -60,7 +60,15 @@ const BlogPage: React.FC<Props> = ({ post, md }) => {
 export const getStaticProps: GetStaticProps = async ({ params }) => {
 	const { slug } = params!
 	const post = matter((await client.hget('posts', slug as string)) as string)
-	return { props: { post: post.data, md: post.content } }
+	return {
+		props: {
+			post: {
+				...post.data,
+				date: new Date(post.data.date).toLocaleDateString(),
+			},
+			md: post.content,
+		},
+	}
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {

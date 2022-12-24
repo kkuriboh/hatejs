@@ -44,13 +44,19 @@ export const getServerSideProps: GetServerSideProps = async () => {
 
 	return {
 		props: {
-			posts: metadata.map(({ fm, slug }) => ({
-				author: fm.data.author,
-				date: fm.data.date,
-				summary: fm.data.summary,
-				title: fm.data.title,
-				slug,
-			})),
+			posts: metadata
+				.map(({ fm, slug }) => ({
+					author: fm.data.author,
+					date: new Date(fm.data.date).toLocaleDateString(),
+					summary: fm.data.summary,
+					title: fm.data.title,
+					slug,
+				}))
+				.sort(
+					(a, b) =>
+						(new Date(a.date) as any) - (new Date(b.date) as any)
+				)
+				.reverse(),
 		},
 	}
 }

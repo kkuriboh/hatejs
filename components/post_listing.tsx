@@ -25,15 +25,20 @@ const PostListing: React.FC<Props> = ({
 			{posts &&
 				posts
 					.slice(0, cursor)
-					.map(({ author, date, summary, slug }, index) => {
+					.map(({ author, date, summary, slug, title }, index) => {
 						return (
 							<article
 								key={index}
 								className="border-2 rounded border-zinc-900 p-4"
 							>
-								<h3 className="font-semibold">
-									{author}: <small>{date}</small>
-								</h3>
+								<div className="flex justify-between items-center mb-1">
+									<h3 className="font-bold text-xl">
+										{title}
+									</h3>
+									<h4 className="font-semibold">
+										{author}: <small>{date}</small>
+									</h4>
+								</div>
 								<p className="indent-2 mb-2">
 									{`${summary.slice(0, 250)}${
 										summary.length > 250 ? '...' : ''

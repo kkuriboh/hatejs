@@ -85,20 +85,6 @@ export default function Home({ posts }: Props) {
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-	/*fs.readFile('test_post.md', 'utf-8', async (err, data) => {
-		if (err) {
-			console.error(err)
-			return
-		}
-		const matt = matter(data)
-		console.log({ data, title: matt.data.title })
-
-		for (let index = 0; index < 10; index++) {
-			const slug = slugify(matt.data.title + ` ${index}`)
-			await client.hset('posts', { [slug]: data })
-		}
-	})*/
-
 	const posts = await client.hgetall('posts')
 
 	const metadata = []
@@ -115,7 +101,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
 		props: {
 			posts: metadata.map(({ fm, slug }) => ({
 				author: fm.data.author,
-				date: fm.data.date,
+				date: new Date(fm.data.date).toLocaleDateString(),
 				summary: fm.data.summary,
 				title: fm.data.title,
 				slug,

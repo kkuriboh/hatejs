@@ -15,7 +15,7 @@ const app_router = t.router({
 				poster_id: z.string(),
 				post_matter: z.object({
 					author: z.string(),
-					date: z.string(),
+					date: z.string().datetime(),
 					summary: z.string(),
 					title: z.string(),
 				}),
