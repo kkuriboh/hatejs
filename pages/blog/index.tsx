@@ -1,5 +1,6 @@
 import matter from 'gray-matter'
 import { GetServerSideProps } from 'next'
+import Head from 'next/head'
 import slugify from 'slugify'
 import Footer from '../../components/footer'
 import Header from '../../components/header'
@@ -14,6 +15,10 @@ type Props = {
 const Blog: React.FC<Props> = ({ posts }) => {
 	return (
 		<>
+			<Head>
+				<title>hatejs posts</title>
+				<link rel="icon" href="/logo.svg" />
+			</Head>
 			<Header />
 			<main className="md:p-8 sm:p-4">
 				<PostListing

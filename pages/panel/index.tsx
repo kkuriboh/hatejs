@@ -16,6 +16,7 @@ import Header from '../../components/header'
 import { check_if_gm } from '../../utils/redis'
 import Button from '../../components/button'
 import { trpc } from '../../utils/trpc'
+import Head from 'next/head'
 
 type props = {
 	user: User
@@ -76,39 +77,48 @@ const Panel: React.FC<props> = ({ user, gm }) => {
 
 	if (!gm)
 		return (
-			<div className="flex flex-col justify-between h-screen">
-				<Header />
-				<main className="mx-auto text-center flex flex-col gap-4">
-					<h2 className="font-bold text-2xl">Not Authorized</h2>
-					<div className="flex gap-2 p-6 mx-auto bg-zinc-300 border rounded border-zinc-800">
-						<h3>{user && user.id}</h3>
-						{!copied ? (
-							<ClipboardDocumentListIcon
-								onClick={() => {
-									set_copied(true)
-									navigator.clipboard.writeText(user.id)
-								}}
-								title="copy"
-								className="text-zinc-500 h-6 w-6 cursor-pointer"
-							/>
-						) : (
-							<ClipboardDocumentCheckIcon
-								title="copied"
-								className="text-zinc-500 h-6 w-6"
-							/>
-						)}
-					</div>
-					<p>
-						Here is your user ID, send it to an admin and ask for
-						permission.
-					</p>
-				</main>
-				<Footer />
-			</div>
+			<>
+				<Head>
+					<link rel="icon" href="/logo.svg" />
+				</Head>
+				<div className="flex flex-col justify-between h-screen">
+					<Header />
+					<main className="mx-auto text-center flex flex-col gap-4">
+						<h2 className="font-bold text-2xl">Not Authorized</h2>
+						<div className="flex gap-2 p-6 mx-auto bg-zinc-300 border rounded border-zinc-800">
+							<h3>{user && user.id}</h3>
+							{!copied ? (
+								<ClipboardDocumentListIcon
+									onClick={() => {
+										set_copied(true)
+										navigator.clipboard.writeText(user.id)
+									}}
+									title="copy"
+									className="text-zinc-500 h-6 w-6 cursor-pointer"
+								/>
+							) : (
+								<ClipboardDocumentCheckIcon
+									title="copied"
+									className="text-zinc-500 h-6 w-6"
+								/>
+							)}
+						</div>
+						<p>
+							Here is your user ID, send it to an admin and ask
+							for permission.
+						</p>
+					</main>
+					<Footer />
+				</div>
+			</>
 		)
 
 	return (
 		<>
+			<Head>
+				<title>hate js panel</title>
+				<link rel="icon" href="/logo.svg" />
+			</Head>
 			<Header />
 			<main className="flex flex-col lg:flex-row p-2 gap-2">
 				<div className="lg:w-2/4">

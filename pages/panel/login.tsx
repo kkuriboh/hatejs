@@ -1,4 +1,5 @@
 import { signIn, useSession } from 'next-auth/react'
+import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import Button from '../../components/button'
@@ -13,18 +14,24 @@ const Login: React.FC = () => {
 	}, [session])
 
 	return (
-		<div className="flex flex-col justify-between h-screen">
-			<Header />
-			<main className="grid place-items-center">
-				<Button
-					className="p-6"
-					onClick={async () => await signIn('github')}
-				>
-					login with github
-				</Button>
-			</main>
-			<Footer />
-		</div>
+		<>
+			<Head>
+				<title>login</title>
+				<link rel="icon" href="/logo.svg" />
+			</Head>
+			<div className="flex flex-col justify-between h-screen">
+				<Header />
+				<main className="grid place-items-center">
+					<Button
+						className="p-6"
+						onClick={async () => await signIn('github')}
+					>
+						login with github
+					</Button>
+				</main>
+				<Footer />
+			</div>
+		</>
 	)
 }
 
