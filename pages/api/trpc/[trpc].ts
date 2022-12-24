@@ -38,6 +38,9 @@ slug: ${slug}
 ${input.post_content}`
 
 			await client.hset('posts', { [slug]: post })
+			await fetch(process.env.BUILD_HOOK!, {
+				method: 'POST',
+			})
 
 			return { status: 202 }
 		}),
