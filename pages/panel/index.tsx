@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { GetServerSideProps } from 'next'
+import { useRouter } from 'next/router'
 import { User } from 'next-auth'
 import { getSession } from 'next-auth/react'
 import {
@@ -8,14 +9,13 @@ import {
 } from '@heroicons/react/24/outline'
 import { marked } from 'marked'
 import hljs from 'highlight.js'
-import 'highlight.js/styles/kimbie-dark.css'
+import 'highlight.js/styles/tokyo-night-dark.css'
 
 import Footer from '../../components/footer'
 import Header from '../../components/header'
 import { check_if_gm } from '../../utils/redis'
 import Button from '../../components/button'
 import { trpc } from '../../utils/trpc'
-import { useRouter } from 'next/router'
 
 type props = {
 	user: User
@@ -110,8 +110,8 @@ const Panel: React.FC<props> = ({ user, gm }) => {
 	return (
 		<>
 			<Header />
-			<main className="flex p-2 gap-2">
-				<div className="w-2/4">
+			<main className="flex flex-col lg:flex-row p-2 gap-2">
+				<div className="lg:w-2/4">
 					<form
 						onSubmit={handle_submit}
 						className="flex flex-col gap-2"
@@ -143,7 +143,7 @@ const Panel: React.FC<props> = ({ user, gm }) => {
 							onChange={(ev) => set_summary(ev.target.value)}
 							className="rounded transition-colors border border-zinc-700 hover:border-zinc-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-50 focus:ring-zinc-400"
 							rows={3}
-						></textarea>
+						/>
 						<label htmlFor="content">Content:</label>
 						<textarea
 							name="content"
@@ -153,15 +153,20 @@ const Panel: React.FC<props> = ({ user, gm }) => {
 							rows={10}
 							value={content}
 							onChange={(ev) => set_content(ev.target.value)}
-						></textarea>
-						<Button className="px-6 bg-zinc-800 text-zinc-50">
+						/>
+						<Button
+							type="submit"
+							className="px-6 bg-zinc-800 text-zinc-50"
+						>
 							post
 						</Button>
 					</form>
 				</div>
 				<div
 					ref={preview_ref}
-					className="w-2/4 bg-zinc-900 text-zinc-50 rounded p-4"
+					className={
+						'lg:w-2/4 lg:overflow-y-scroll lg:max-h-[85vh] md:min-w-full lg:min-w-min bg-zinc-900 text-zinc-50 rounded p-4 prose prose-lg md:prose-xl prose-headings:text-zinc-50 prose-stone'
+					}
 					dangerouslySetInnerHTML={{ __html: preview }}
 				/>
 			</main>

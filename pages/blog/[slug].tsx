@@ -2,6 +2,10 @@ import matter from 'gray-matter'
 import { marked } from 'marked'
 import { GetStaticPaths, GetStaticProps } from 'next'
 import Head from 'next/head'
+import { useEffect, useRef } from 'react'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/tokyo-night-dark.css'
+
 import Footer from '../../components/footer'
 import Header from '../../components/header'
 
@@ -14,6 +18,17 @@ type Props = {
 }
 
 const BlogPage: React.FC<Props> = ({ post, md }) => {
+	const content_ref = useRef<HTMLDivElement>(null)
+	useEffect(
+		() =>
+			content_ref.current
+				?.querySelectorAll('code')
+				.forEach((element) =>
+					hljs.highlightElement(element as HTMLElement)
+				),
+		[]
+	)
+
 	return (
 		<>
 			{post && (
@@ -28,9 +43,13 @@ const BlogPage: React.FC<Props> = ({ post, md }) => {
 				</Head>
 			)}
 			<Header />
-			<main className="md:p-8 sm:p-4">
+			<main className="md:p-8 p-4 flex justify-center">
 				{md && (
-					<div dangerouslySetInnerHTML={{ __html: marked(md) }}></div>
+					<div
+						ref={content_ref}
+						className="w-full prose prose-zinc prose-lg md:prose-xl prose-hr:border-zinc-600 prose-hr:border-2"
+						dangerouslySetInnerHTML={{ __html: marked(md) }}
+					/>
 				)}
 			</main>
 			<Footer />
